@@ -1,0 +1,22 @@
+{
+  "name": "demo-rest-crud-clientes-postgresql",
+  "version": "1.0.0",
+  "description": "Demo de nodejs con Postgresql para realizar un crud y servicios Rest",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "dgomez@vortexbird.com",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "body-parser": "~1.17.1",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.3",
+    "express": "~4.15.2",
+    "jade": "~1.11.0",
+    "morgan": "~1.8.1",
+    "pg-promise": "^6.3.5",
+    "serve-favicon": "~2.4.2"
+  }
+}
