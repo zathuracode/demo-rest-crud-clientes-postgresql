@@ -1,5 +1,9 @@
 var express = require('express');
 var promise = require('bluebird');
+var util = require('util');
+
+var bodyParser = require('body-parser')
+
 
 var options = {
   // Initialization Options
@@ -11,7 +15,7 @@ var pgp = require('pg-promise')(options);
 const cn = {
     host: 'localhost', // 'localhost' is the default;
     port: 5432, // 5432 is the default;
-    database: 'puppies',
+    database: 'clientes',
     user: 'postgres',
     password: 'admin',
     poolSize:10
@@ -21,18 +25,22 @@ const cn = {
 
 const db = pgp(cn); // database instance;
 
-// add query functions
-
 var app = express();
 
-app.get('/api/puppies', function (req, res,next) {
-  db.any('select * from pups')
+app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+})); 
+
+//GET consulta de todos los clientes
+app.get('/api/clientes', function (req, res,next) {
+  db.any('select * from clientes')
     .then(function (data) {
       res.status(200)
         .json({
           status: 'success',
           data: data,
-          message: 'Retrieved ALL puppies'
+          message: 'Retorna todos los clientes'
         });
     })
     .catch(function (err) {
@@ -40,15 +48,16 @@ app.get('/api/puppies', function (req, res,next) {
     });
 });
 
-app.get('/api/puppies/:id', function (req, res, next) {
+//GET consulta de cliente por id
+app.get('/api/clientes/:id', function (req, res, next) {
   var pupID = parseInt(req.params.id);
-  db.one('select * from pups where id = $1', pupID)
+  db.one('select * from clientes where cli_id = $1', pupID)
     .then(function (data) {
       res.status(200)
         .json({
           status: 'success',
           data: data,
-          message: 'Retrieved ONE puppy'
+          message: 'Retorna un solo cliente por eso se usa db.one'
         });
     })
     .catch(function (err) {
@@ -56,16 +65,17 @@ app.get('/api/puppies/:id', function (req, res, next) {
     });
 });
 
-app.post('/api/puppies', function (req, res, next) {
-  req.body.age = parseInt(req.body.age);
-  db.none('insert into pups(name, breed, age, sex)' +
-      'values(${name}, ${breed}, ${age}, ${sex})',
+//POST Crear clientes
+app.post('/api/clientes', function (req, res, next) {
+  req.body.cli_id = parseInt(req.body.cli_id);
+  req.body.tdoc_codigo = parseInt(req.body.tdoc_codigo);
+  db.none('INSERT INTO clientes(cli_id, tdoc_codigo, cli_nombre, cli_direccion, cli_telefono,cli_mail)VALUES(${cli_id}, ${tdoc_codigo}, ${cli_nombre}, ${cli_direccion}, ${cli_telefono},${cli_mail})',
     req.body)
     .then(function () {
       res.status(200)
         .json({
           status: 'success',
-          message: 'Inserted one puppy'
+          message: 'Inserta un cliente'
         });
     })
     .catch(function (err) {
@@ -73,15 +83,14 @@ app.post('/api/puppies', function (req, res, next) {
     });
 });
 
-app.put('/api/puppies/:id', function (req, res, next) {
-  db.none('update pups set name=$1, breed=$2, age=$3, sex=$4 where id=$5',
-    [req.body.name, req.body.breed, parseInt(req.body.age),
-      req.body.sex, parseInt(req.params.id)])
+app.put('/api/clientes/:id', function (req, res, next) {
+ 
+  db.none('UPDATE clientes SET tdoc_codigo=$1, cli_nombre=$2, cli_direccion=$3, cli_telefono=$4,cli_mail=$5 WHERE cli_id=$6',[parseInt(req.body.tdoc_codigo), req.body.cli_nombre, req.body.cli_direccion, req.body.cli_telefono,req.body.cli_mail,parseInt(req.param.id)])
     .then(function () {
       res.status(200)
         .json({
           status: 'success',
-          message: 'Updated puppy'
+          message: 'Actualiza un cliente'
         });
     })
     .catch(function (err) {
@@ -89,17 +98,15 @@ app.put('/api/puppies/:id', function (req, res, next) {
     });
 });
 
-app.delete('/api/puppies/:id', function (req, res, next) {
-  var pupID = parseInt(req.params.id);
-  db.result('delete from pups where id = $1', pupID)
+app.delete('/api/clientes/:id', function (req, res, next) {
+  var cliId = parseInt(req.params.id);
+  db.result('delete from clientes where cli_id = $1', cliId)
     .then(function (result) {
-      /* jshint ignore:start */
       res.status(200)
         .json({
           status: 'success',
-          message: `Removed ${result.rowCount} puppy`
+          message: 'Borro ${result.rowCount} clientes'
         });
-      /* jshint ignore:end */
     })
     .catch(function (err) {
       return next(err);
